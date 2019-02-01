@@ -19,17 +19,17 @@
             url: "https://localhost:44304/Connect/SqlQuery",
             content: "application/json; charset=utf-8",
             dataType: "json",
-            data: { sql:JSON.stringify(data) },
+            data: { sql: JSON.stringify(data) },
             traditional: true,
             success: function (result) {
                 alert('Yay! It worked!');
                 this.ajax_reply();
-            },
+            }.bind(this),
             error: function (result) {
                 alert('Oh no :(  : ' + result);
             }
         });
-    }
+    }.bind(this);
 
     this.ajax_reply = function (e) {
         var SqlEval = function () {
@@ -41,7 +41,7 @@
                         this.CreateHtml(response);
                     }.bind(this)
                 })
-            };
+            }.bind(this);
 
             this.CreateHtml = function (resp) {
                 var html = [];
@@ -68,7 +68,7 @@
             };
 
             this.start();
-        }            
+        }.bind(this)            
 
     }
     this.onDrop = function (evt, ui) {

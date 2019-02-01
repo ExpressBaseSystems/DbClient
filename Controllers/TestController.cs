@@ -21,7 +21,7 @@ namespace test
         public List<string> explain = new List<string>();
         public int rowno;
         public Result resultobj=new Result();
-        public List<JProperty> jsonobj = new List<JProperty>();
+        // public List<JProperty> jsonobj = new List<JProperty>();
     }
     public class TestController : Controller
     {
@@ -65,7 +65,7 @@ namespace test
                 conn = new NpgsqlConnection("Server=35.200.147.143;User Id=interns_november2018_admin;" +
                                 "Password=ruwPcqyM;Database=interns_november2018;");
                 conn.Open();
-                q1 = new Query() { qstring= "select * from company where id <5;"};
+                q1 = new Query() { qstring= "select * from company as c,department as d, executionlogs as e where c.id=d.co_id and e.id=c.id" };
                 // command.Parameters.Add(":id", NpgsqlTypes.NpgsqlDbType.Integer);
                 // command.Parameters[":id"].Value = 2;
                 string sql2 = @"explain (format json, analyze on) " + q1.qstring + ";" +q1.qstring;
@@ -109,8 +109,8 @@ namespace test
                 q1.explain.Add("Execution Time : "  + watch.ElapsedMilliseconds+"ms");
                 dr.Close();
                 q1.rowno = counter;
-                NpgsqlCommand command = new NpgsqlCommand("insert into queryplan(startcost,totalcost,rows,loops,plan_time,exec_time) values(" + d[0].Plan.ActualStartupTime + "," + d[0].Plan.ActualTotalTime + "," + d[0].Plan.ActualRows + "," + d[0].Plan.ActualLoops + "," + d[0].PlanningTime + "," + d[0].ExecutionTime + ")",conn);
-                int num=command.ExecuteNonQuery();
+                //NpgsqlCommand command = new NpgsqlCommand("insert into queryplan(startcost,totalcost,rows,loops,plan_time,exec_time) values(" + d[0].Plan.ActualStartupTime + "," + d[0].Plan.ActualTotalTime + "," + d[0].Plan.ActualRows + "," + d[0].Plan.ActualLoops + "," + d[0].PlanningTime + "," + d[0].ExecutionTime + ")",conn);
+                //int num=command.ExecuteNonQuery();
                 
                 conn.Close();
             }

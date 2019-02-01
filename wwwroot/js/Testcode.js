@@ -1,4 +1,8 @@
 ﻿var SqlEval = function () {
+    var str = '';
+    var index = 0;
+    var row = 0;
+    var idi = 0;
     this.refresh = function (e) {
         ////var value1 = $('textarea[name="querytext"]').val();
         ////var value2 = $('textarea[name="queryparam"]').val();
@@ -11,9 +15,66 @@
             success: function (response) {
                 this.CreateHtml(response);
                 this.CreateResult(response);
+                this.CreateExplain(response);
+                this.JsonTraverse(JSON.parse(response.explain[0])[0]);
+                //$('#output1').text(str);
+                var html = [];
+                html.push(` <div class = "_row">${str}`);
+                $('#JsonD').append(html.join());
             }.bind(this)
         })
     };
+
+    this.CreateExplain = function (response) {
+            var jsonp = response.explain[0];
+            var Node = '';
+            var obj = $.parseJSON(jsonp);
+           
+        var formattedData = JSON.stringify(obj, null, '\t');
+        $('#output').text(formattedData);
+    };
+
+    this.JsonTraverse = function (object) {
+        for (var keys in object) {
+            for (var key in object[keys]) {
+                if (key == "Node Type") {
+                    //str += '<dt>' + '<img src="~/images/hash.png" />'+ object[keys]["Node Type"] + '</dt>';
+                    if (object[keys]["Node Type"] == "Seq Scan") {
+                        row += 1;
+                        //index += 1;
+                        str += '<div class =  "column" id="a' + idi++ + '" >' + '<img src="../images/seq.svg" style="width:50px;height:60x; "/>' + object[keys]["Relation Name"] + '</div></div>';
+                        this.draw('a'+idi,'a'+idi--);
+                    }
+                    if (object[keys]["Node Type"] == "Hash") {
+                        
+                        str += '<div class = "_row">';
+                        for ( i=0; i < index; i++) {
+                            str += '<div class =  "column"></div>';
+                        }
+                        index += 1;
+                        str += '<div class =  "column" id="a' + idi++ +'" >' + '<img src="../images/hash.svg" style="width:50px;height:60x; "/>' + object[keys]["Node Type"]  + '</div>';
+                    }
+                    if (object[keys]["Node Type"] == "Hash Join") {
+                        index += 1;
+                        str += '<div class =  "column" id="a' + idi++ +'" >' + '<img src="../images/hash.svg" style="width:50px;height:60x; "/>' + object[keys]["Node Type"]  + '</div>';
+                    }
+                }
+                if (key == "Plans") {
+                    //str += '</div ><div style="float: right;">';
+                    this.JsonTraverse(object[keys][key]);
+                }
+            }
+        }
+        
+    }
+
+    this.draw = function (start, stop) {
+        new LeaderLine(
+            document.getElementById(''+start+''),
+            document.getElementById(''+stop+'')
+        );
+    }
+    
 
     this.CreateHtml = function (resp) {
         var html = [];

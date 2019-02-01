@@ -5,3 +5,13 @@
 .sqltbl {
     width: 100%;
 }
+._row {
+    height: 150px;
+    min-width: 100px;
+    width:100%;
+}
+.column {
+   float:right;
+   height:100%;
+   width:200px;
+}

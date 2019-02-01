@@ -20,7 +20,9 @@
 <script src="~/js/codemirror.js" type="text/javascript"></script>
 <script src="~/js/mode/sql/sql.js" type="text/javascript"></script>
 <div id="droppable" class="drop-box"></div>
-
+<button type="button" class="btn btn-primary" id="showhide" data-toggle="button" aria-pressed="false" autocomplete="off">
+    HIDE
+</button>
 <div class="cont">
     <div class="mytree" style="padding:12px;border:2px solid #ccc; margin-right: 850px; margin-top:20px; position: relative; height: 500px; overflow: auto ;">
         @{
@@ -65,7 +67,7 @@
 <textarea id="code" name="code" style="margin-right: 850px; margin-top:20px; position: relative; height: 500px; overflow: auto ; margin-right: 850px; margin-top:530px; position: relative; height: 200px; overflow: auto; ;"></textarea>
 <i class="fa fa-sign-in" aria-hidden="true" id="sqlquery"></i>
 
-<script>
+
     <table id="querT" class="table" style="width:100%">
     @{ if(ViewBag.Row != null)
         {
@@ -87,7 +89,7 @@
 
     }
     </table>
-</script>
+
 
 <script>
     let tableCollection = @Html.Raw(ViewBag.TablesDict_S);
