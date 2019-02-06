@@ -3,6 +3,13 @@
     var index = 0;
     var row = 0;
     var idi = 0;
+    var html = [];
+    var connect = 0;
+    var HJ = [];
+    var count = 0;
+    //var draw = [];
+    var draw = new Object();
+    html.push(` <div class = "_row">`);
     this.refresh = function (e) {
         ////var value1 = $('textarea[name="querytext"]').val();
         ////var value2 = $('textarea[name="queryparam"]').val();
@@ -16,11 +23,9 @@
                 this.CreateHtml(response);
                 this.CreateResult(response);
                 this.CreateExplain(response);
-                this.JsonTraverse(JSON.parse(response.explain[0])[0]);
-                //$('#output1').text(str);
-                var html = [];
-                html.push(` <div class = "_row">${str}`);
+                this.JsonTraverse(JSON.parse(response.explain[0])[0]);  
                 $('#JsonD').append(html.join());
+                this.draw();
             }.bind(this)
         })
     };
@@ -31,7 +36,7 @@
             var obj = $.parseJSON(jsonp);
            
         var formattedData = JSON.stringify(obj, null, '\t');
-        $('#output').text(formattedData);
+        //$('#output').text(formattedData);
     };
 
     this.JsonTraverse = function (object) {
@@ -41,22 +46,112 @@
                     //str += '<dt>' + '<img src="~/images/hash.png" />'+ object[keys]["Node Type"] + '</dt>';
                     if (object[keys]["Node Type"] == "Seq Scan") {
                         row += 1;
-                        //index += 1;
-                        str += '<div class =  "column" id="a' + idi++ + '" >' + '<img src="../images/seq.svg" style="width:50px;height:60x; "/>' + object[keys]["Relation Name"] + '</div></div>';
-                        this.draw('a'+idi,'a'+idi--);
+                        index -= 1;
+                        html.push('<div class =  "_column"  >' + '<img src="../images/seq.svg" id="a' + idi++ + '" style="width:50px;height:60x; "/><br/>' + object[keys]["Relation Name"] + '</div></div>');
+                        var pre = idi - 2;
+                        pre = 'a' + pre;
+                        var send = idi - 1;
+                        sent = 'a' + send;
+                        //this.draw(sent, pre);
+                        draw[connect++] = { "From" : sent, "To" : pre };
                     }
                     if (object[keys]["Node Type"] == "Hash") {
-                        
-                        str += '<div class = "_row">';
-                        for ( i=0; i < index; i++) {
-                            str += '<div class =  "column"></div>';
+                        html.push('<div class = "_row">');
+                        for (i = 0; i <= index; i++) {
+                            html.push('<div class =  "_column"></div>');
                         }
                         index += 1;
-                        str += '<div class =  "column" id="a' + idi++ +'" >' + '<img src="../images/hash.svg" style="width:50px;height:60x; "/>' + object[keys]["Node Type"]  + '</div>';
+                        html.push('<div class =  "_column" >' + '<img src="../images/hash.svg" id="a' + idi++ + '" style="width:50px;height:60x; "/><br/>' + object[keys]["Node Type"] + '</div>');
+                        var pre = idi - 3;
+                        pre = 'a' + pre;
+                        var send = idi - 1;
+                        sent = 'a' + send;
+                        //this.draw(sent, pre);
+                        draw[connect++] = { "From": sent, "To": HJ[--count].sent };
+                    }
+                    if (object[keys]["Node Type"] == "Materialize") {
+                        html.push('<div class = "_row">');
+                        for (i = 0; i <= index; i++) {
+                            html.push('<div class =  "_column"></div>');
+                        }
+                        index += 1;
+                        html.push('<div class =  "_column" >' + '<img src="../images/ex_materialize.svg" id="a' + idi++ + '" style="width:50px;height:60x; "/><br/>' + object[keys]["Node Type"] + '</div>');
+                        var pre = idi - 3;
+                        pre = 'a' + pre;
+                        var send = idi - 1;
+                        sent = 'a' + send;
+                        //this.draw(sent, pre);
+                        draw[connect++] = { "From": sent, "To": HJ[--count].sent };
+                    }
+                    if (object[keys]["Node Type"] == "Aggregate") {
+                        index += 1;
+                        html.push('<div class =  "_column" >' + '<img src="../images/ex_aggregate.svg" id="a' + idi++ + '" style="width:50px;height:60x; "/><br/>' + object[keys]["Node Type"] + '</div>');
+                        var pre = idi - 2;
+                        pre = 'a' + pre;
+                        var send = idi - 1;
+                        sent = 'a' + send;
+                        //this.draw(sent, pre);
+                        draw[connect++] = { "From": sent, "To": pre };
+                    }
+                    if (object[keys]["Node Type"] == "Subquery Scan") {
+                        //index += 1;
+                        html.push('<div class =  "_column" >' + '<img src="../images/ex_subplan.svg" id="a' + idi++ + '" style="width:50px;height:60x; "/><br/>' + object[keys]["Node Type"] + '</div>');
+                        var pre = idi - 2;
+                        pre = 'a' + pre;
+                        var send = idi - 1;
+                        sent = 'a' + send;
+                        //this.draw(sent, pre);
+                        draw[connect++] = { "From": sent, "To": pre };
                     }
                     if (object[keys]["Node Type"] == "Hash Join") {
                         index += 1;
-                        str += '<div class =  "column" id="a' + idi++ +'" >' + '<img src="../images/hash.svg" style="width:50px;height:60x; "/>' + object[keys]["Node Type"]  + '</div>';
+                        html.push('<div class =  "_column" >' + '<img src="../images/hash.svg"  id="a' + idi++ + '" style="width:50px;height:60x; "/><br/>' + object[keys]["Node Type"]+ " " + object[keys]["Join Type"] + '</div>');
+                        if (idi != 1) {
+                            var pre = idi - 2;
+                            pre = 'a' + pre;
+                            var send = idi - 1;
+                            sent = 'a' + send;
+                            //this.draw(sent, pre);
+                            draw[connect++] = { "From": sent, "To": pre };
+                            HJ[count++] = {sent};
+                        }
+                    }
+                    if (object[keys]["Node Type"] == "Merge Join") {
+                        index += 1;
+                        html.push('<div class =  "_column" >' + '<img src="../images/ex_merge.svg"  id="a' + idi++ + '" style="width:50px;height:60x; "/><br/>' + object[keys]["Node Type"] + " " + object[keys]["Join Type"] + '</div>');
+                        if (idi != 1) {
+                            var pre = idi - 2;
+                            pre = 'a' + pre;
+                            var send = idi - 1;
+                            sent = 'a' + send;
+                            //this.draw(sent, pre);
+                            draw[connect++] = { "From": sent, "To": pre };
+                            HJ[count++] = { sent };
+                        }
+                    }
+                    if (object[keys]["Node Type"] == "Sort") {
+                        //index += 1;
+                        html.push('<div class =  "_column" >' + '<img src="../images/sort.svg"  id="a' + idi++ + '" style="width:50px;height:60x; "/><br/>' + object[keys]["Node Type"] + '</div>');
+                        if (idi != 1) {
+                            var pre = idi - 2;
+                            pre = 'a' + pre;
+                            var send = idi - 1;
+                            sent = 'a' + send;
+                            //this.draw(sent, pre);
+                            draw[connect++] = { "From": sent, "To": pre };
+                        }
+                    }
+                    if (object[keys]["Node Type"] == "Unique") {
+                        //index += 1;
+                        html.push('<div class =  "_column" >' + '<img src="../images/ex_unique.svg"  id="a' + idi++ + '" style="width:50px;height:60x; "/><br/>' + object[keys]["Node Type"] + '</div>');
+                        if (idi != 1) {
+                            var pre = idi - 2;
+                            pre = 'a' + pre;
+                            var send = idi - 1;
+                            sent = 'a' + send;
+                            //this.draw(sent, pre);
+                            draw[connect++] = { "From": sent, "To": pre };
+                        }
                     }
                 }
                 if (key == "Plans") {
@@ -68,11 +163,11 @@
         
     }
 
-    this.draw = function (start, stop) {
-        new LeaderLine(
-            document.getElementById(''+start+''),
-            document.getElementById(''+stop+'')
-        );
+    this.draw = function () {
+        for (var key in draw) {
+            new LeaderLine(document.getElementById(draw[key].From),
+                document.getElementById(draw[key].To)).position();
+        }
     }
     
 
