@@ -79,10 +79,20 @@ div.mytree div {
 .drop-box {
     position: absolute;
     top: 72px;
-    left: 490px;
     width: 850px;
     height: 300px;
     background: #999;
+    color: #fff;
+    padding: 10px;
+}
+
+#pannel {
+    position: absolute;
+    top: 72px;
+    left: 490px;
+    right: 50px;
+    /*width: 1250px;
+    height: 1300px;*/
     color: #fff;
     padding: 10px;
 }

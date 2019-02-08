@@ -56,7 +56,7 @@ namespace SQL_Padichu
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Test}/{action=Test}/{id?}");
+                    template: "{controller=Connect}/{action=Connect}/{id?}");
             });
         }
     }

@@ -6,7 +6,7 @@
     width: 100%;
 }
 ._row {
-    height: 150px;
+    height: 100px;
     width: 100%;
     display: flex;
     flex-wrap: nowrap;
@@ -15,5 +15,16 @@
 
 ._column {
     min-width: 30px;
-    padding-right: 100px;
+    padding-right: 50px;
+}
+._column_ {
+    min-width: 140px;
+    padding-right: 50px;
+}
+.explain-tooltip {
+    display: table-cell;
+    text-align: left;
+    white-space: nowrap;
+    padding: 2px !important;
+    font-size: small;
 }

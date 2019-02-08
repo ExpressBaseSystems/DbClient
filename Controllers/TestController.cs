@@ -65,115 +65,85 @@ namespace test
                 conn = new NpgsqlConnection("Server=35.200.147.143;User Id=interns_november2018_admin;" +
                                 "Password=ruwPcqyM;Database=interns_november2018;");
                 conn.Open();
-                q1 = new Query() { qstring= @"SELECT 
-Distinct
-    q1.customers_id as id,
-    q2.accountcode,
-    replace(initcap(q2.longname),'Hoc ','') AS CENTER,
-    q2.consdate AS DOC,
-    q1.trdate AS DOCLO,
-    COALESCE(q4.ht,' ') AS HTDATE,
-    COALESCE(q2.name,' ') AS NAME,
-    COALESCE(q1.status,' ') AS STATUS,
-    COALESCE(q2.typeofcustomer,' ') AS SERVICE,
-    --COALESCE(to_number(regexp_replace(q2.age, '[^0-9]', '')),0) AS AGE,
-    --EXTRACT(YEAR FROM age(q2.dob)) Age,
-    COALESCE(date_part('year',age(dob)) ,0) AS AGE,
-    COALESCE(q2.genurl,' ') AS MOBILE,
-    COALESCE(q2.clcity,' ') AS City,
-    q2.district AS DISTRICT,
-    CASE WHEN q2.customertype='1' THEN 'Yes' ELSE 'No' END as NRI,
-    COALESCE(q2.sourcecategory,' ') AS sourcecategory,
-    COALESCE(q2.subcategory,' ') AS SOURCESUBCAT,
-    COALESCE(q2.noofgrafts,0) AS GRAFTS,
-    COALESCE(q2.totalrate,0) AS RATE,
-    COALESCE(q5.advanceamount,0) AS ADVANCE,
-    COALESCE(q3.doctor,' ') AS CONSULTEDDR,
-    COALESCE(q1.createdby,' ') AS CLOSEDBY,
-    q2.trdate as DOE,
-q2.eb_loc_id
+                q1 = new Query() { qstring= @"SELECT
+q1.customers_id as id,
+    q1.accountcode,
    
+    COALESCE(q1.ht,' ') as HTDate,
+    COALESCE(q2.name,' ') as name,
+    --COALESCE(to_number(regexp_replace(q2.age, '[^0-9]', '')),0) AS AGE,
+    COALESCE(date_part('year',age(q2.dob)) ,0) AS AGE,
+    COALESCE(q2.genurl,' ') as contact,
+    COALESCE(initcap(q2.clcity),' ') as City,
+    'Not Available' as district,
+    COALESCE(q2.sourcecategory,' ') as sourcecategory,
+    COALESCE(q3.noofgrafts,0) as grafts,
+    COALESCE(q3.totalrate,0) as rate,
+    COALESCE(ROUND(q3.totalrate/NULLIF(q3.noofgrafts,0),0),0) as RPG,
+    COALESCE(q4.Nurse,' ') as nurses,
+    COALESCE(q5.Doctor,' ') as doctors,  
+    COALESCE(q1.doctorsinstructions,' ') as doctor_instr,
+    COALESCE(q1.patientinstructions,' ') as patient_instr
 FROM
-
-(
-SELECT
-    x.customers_id,x.trdate,x.status,y.createdby
-FROM
-(
-        SELECT
-    xx.customers_id,xx.trdate,xx.status
-FROM
-(
-    SELECT
-        customers_id, MIN(trdate) AS trdate, MAX(status) AS status
-FROM
-        leaddetails
-WHERE
-        (lower(status)='closed' OR lower(status)='ht done')  
-GROUP BY customers_id
-)xx
-WHERE
-    to_char(trdate,'mm/yyyy')=('01-2018')
-    )x
-    LEFT JOIN
-    (
-        SELECT
-    customers_id,string_agg(distinct createdby,',') as createdby,trdate--,status
-FROM
-        leaddetails
-        where
-        status = 'Closed'
-        GROUP BY customers_id,trdate
-    )y ON x.customers_id=y.customers_id AND x.trdate = y.trdate
-)q1
-LEFT JOIN
-    (
-        SELECT
-            LR.consdate,CV.name,CV.age,CV.genurl,CV.sourcecategory,CV.subcategory,CV.typeofcustomer,loc.longname,loc.id as eb_loc_id,LR.noofgrafts,LR.totalrate,CV.accountcode,
-            CV.clcity,CV.customertype,CV.dob,CV.id,CV.trdate,CV.district
-        FROM
-            customers CV,eb_locations loc,leadratedetails LR
-        WHERE
-             CV.eb_loc_id = loc.id AND CV.id = LR.customers_id
-    )q2
-ON
-q1.customers_id = q2.id
-LEFT JOIN
 (
     SELECT
-        LS1.customers_id,D.name as Doctor
-    FROM
-        doctors D, leadratedetails LS1
-    WHERE
-        D.id=LS1.consultingdoctor
-)q3
-ON
-q1.customers_id=q3.customers_id
-LEFT JOIN
-(SELECT
-        LS.customers_id,string_agg(to_char( LS. dateofsurgery,'dd-Mon-yy'),',')as ht
-        --regexp_replace(listagg(to_char(LS. dateofsurgery,'Mon-dd'),',') WITHIN GROUP (ORDER BY LS. dateofsurgery), '([^,]+)(,\1)+', '\1') as ht    
+    LS.customers_id,
+        LS.accountcode,regexp_replace(
+        string_agg(to_char(dateofsurgery,'dd/mm/yyyy'),',') , '([^,]+)(,\1)+', '\1') as ht,
+        string_agg(LS.doctorsinstructions,',') doctorsinstructions,
+        string_agg(LS.patientinstructions,',') patientinstructions
     FROM
         leadsurgerydetails LS
+    WHERE
+        LS.dateofsurgery BETWEEN '01/01/2018' and '12/01/2018'
+        AND
+        LS.prehead=50
     GROUP BY
-        LS.customers_id
-)q4
-ON q1.customers_id=q4.customers_id
+        LS.customers_id,LS.accountcode
+)q1
 LEFT JOIN
 (
-      SELECT
-        LP.customers_id,sum(LP.advanceamount ) as advanceamount,MAX(LP.trdate)
+    SELECT
+        CV.id,CV.name,CV.age,CV.genurl,CV.sourcecategory,CV.clcity,CV.dob
     FROM
-        leadpaymentdetails LP
-    Group By
-       LP.customers_id
+        customers CV
+    WHERE
+       CV.prehead=50
+)q2
+ON q1.customers_id = q2.id
+LEFT JOIN
+(
+    SELECT
+        LR.customers_id,LR.noofgrafts,LR.totalrate
+    FROM
+        leadratedetails LR
+)q3
+ON q1.customers_id = q3.customers_id
+LEFT JOIN
+(
+    SELECT
+        LS.customers_id,regexp_replace(string_agg(CV.name,','), '([^,]+)(,\1)+', '\1') nurse
+    FROM
+        nurses CV,leadsurgerystaffdetails LS
+    WHERE
+        LS.nurses_id = CV.id
+    GROUP BY  
+        LS.customers_id
+)q4
+ON q1.customers_id = q4.customers_id
+LEFT JOIN
+(
+    SELECT
+        LS.customers_id,regexp_replace(string_agg(CV.name,',') , '([^,]+)(,\1)+', '\1') doctor
+    FROM
+        doctors CV,leadsurgerystaffdetails LS
+    WHERE
+        LS.doctors_id = CV.id
+    GROUP BY  
+        LS.customers_id
 )q5
-ON q1.customers_id =q5.customers_id
---WHERE
---(CASE WHEN -1=-1 THEN eb_loc_id>0 ELSE eb_loc_id=ANY(string_to_array(:eb_location_id,',')::int[]) END)
--- eb_loc_id=ANY(string_to_array(:eb_location_id,',')::int[])
-ORDER BY name;
- " };
+ON q1.customers_id = q5.customers_id
+;"};
                 // command.Parameters.Add(":id", NpgsqlTypes.NpgsqlDbType.Integer);
                 // command.Parameters[":id"].Value = 2;
                 string sql2 = @"explain (format json, analyze on) " + q1.qstring + ";" +q1.qstring;

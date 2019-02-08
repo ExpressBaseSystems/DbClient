@@ -134,13 +134,23 @@
   
     };
 
+    this.pannelhide = function () {
+        $('#DRAG').click(function () {
+            $('#droppable').toggle();
+        });
+        
+    }
+
     this.init = function () {
         $('.mytree div:has(div)').addClass('parent');
         $('div.mytree div').click(this.create_tree);
         $('#sqlquery').click(this.ajax_call);
         this.makeDraggable();
         this.makeDrop();
-        
+        this.pannelhide();
+        $('#QUERY').click(function () {
+            $('div.CodeMirror.cm-s-default').toggle();
+        });
     };
 
     this.init();
